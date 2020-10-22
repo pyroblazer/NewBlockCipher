@@ -288,9 +288,27 @@ def generateKeyDependentSBox(key):
 #         newSbox.append(newSboxValue)
 #     return newSbox
 
-def generateKeyDependentPBox(key):
+def swap(x, y):
+    temp = x 
+    x = y 
+    y = temp
+    return x, y
 
-    pass
+#using RC4 key scheduling
+def generateKeyDependentPBox(key):
+    Pbox = [i for i in range(8)]
+    j = 0
+    for i in range(8):
+        j = (j+Pbox[i]+key[i % 8]) % 256
+        Pbox[i], Pbox[j] = swap(Pbox[i], Pbox[j])
+    return Pbox
+
+def permutate(key, text):
+    Pbox = generateKeyDependentPBox(key)
+    newText = ""
+    for i in range(8):
+        newText += text[Pbox[i]]
+    return newText
 
 def ROTL8(x, shift):
     return ((x) << (shift)) | ((x) >> (8 - (shift)))
