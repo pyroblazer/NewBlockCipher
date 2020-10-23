@@ -42,8 +42,8 @@ def encryptMessage(key, message, mode):
             messagetemp.append(block)
         for i in range(len(message)):
             message[i] = bin(i)[2:]
-            print(message[i])
-            print(message)
+            #print(message[i])
+            #print(message)
             if ( len(message[i]) < BLOCKSIZE):
                 for j in range(len(message[i]), BLOCKSIZE):
                     message[i] = "0" + message[i]
@@ -87,7 +87,7 @@ def decryptCipher(key, ciphertext, mode):
         for i in range(len(ciphertext)):
             ciphertext[i] = bin(i)[2:]
             if ( len(ciphertext[i]) < BLOCKSIZE):
-                print(ciphertext[i])
+                #print(ciphertext[i])
                 for j in range(len(ciphertext[i]), BLOCKSIZE):
                     ciphertext[i] = "0" + ciphertext[i]
         for block in ciphertext:
@@ -127,6 +127,7 @@ def subkeygen(s1, s2, i):
     return hashlib.sha256(s1.encode() + s2.encode()).hexdigest()
 
 def scramble(block, NFeistelRound, key):
+    sbox = generateKeyDependentSBox(key)
     key = stringToBinary(key)
     block = stringToBinary(str(block))
 
@@ -152,7 +153,7 @@ def scramble(block, NFeistelRound, key):
     for i in range(len(ab)):
         row = binaryToInteger(ab[i][:2] + ab[i][6:8])
         column = binaryToInteger(ab[i][3:6])
-        ab[i] = integerToBinary(RijndaelSBox[16*row+column]).split('b')[1]
+        ab[i] = integerToBinary(sbox[16*row+column]).split('b')[1]
     block = ''.join(ab)
 
     key = binaryToInteger(key)
@@ -204,8 +205,8 @@ def getShift(key):
     """ Return the shift count based on the AES key."""
     shiftCount = 0
     for i, k in enumerate(key):
-        print(i)
-        print(k)
+        #print(i)
+        #print(k)
         shiftCount ^= k * (i+1) % (0xFF+1)
     return shiftCount
 
@@ -274,12 +275,12 @@ def mixKey(key):
     the operation k^sum_of_key, where k is the respective byte in the input key 
     (this reduces collisions between similar keys)."""
     newKey = []
-    print("mixKey key = ", key)
+    #print("mixKey key = ", key)
     #print("sum = ", sumOfKey(key))
     for i in range(len(key)):
         #print("ord(" + key[i] + ") = ", ord(key[i]))
         newKey.append(key[i]^sum(key))
-    print("newKey = ", newKey)
+    #print("newKey = ", newKey)
     return newKey
 
 def hexToKey(hexKey):
@@ -367,7 +368,7 @@ if __name__ == "__main__":
     #ciphertext = encryptMessage("B", "00000000", "counter")
     ciphertext = encryptMessage("B", "I, Giorno Giovanna, have a dream", "counter")
     #ciphertext = encryptMessage("B", "AAAAAAAA", "ebc")
-    print("ciphertext = ", ciphertext)
+    print(ciphertext)
     #print("AA = ", binaryToHex('10101010')[2:].upper())cl
     plaintext = decryptCipher("B", ciphertext, "counter")
     print("plaintext = ", plaintext, " ", len(plaintext))
