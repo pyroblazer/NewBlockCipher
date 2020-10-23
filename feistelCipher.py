@@ -2,7 +2,7 @@ import sys,hashlib,base64,binascii
 import numpy as np
 
 ROUNDS = 8
-BLOCKSIZE = 8
+BLOCKSIZE = 16
 BLOCKSIZE_BITS = 256
 
 RijndaelSBox = [
@@ -129,6 +129,31 @@ def subkeygen(s1, s2, i):
 def scramble(block, NFeistelRound, key):
     key = stringToBinary(key)
     block = stringToBinary(str(block))
+
+    #iterated
+    #transposition
+    keyi = 0
+    for i in range(len(key)):
+        keyi = keyi + int(key[i])
+    
+    for i in range(keyi):
+        keyt = (keyi % len(block))
+        while(len(block) % keyt != 0):
+            keyt = keyt + 1
+        nb = ''
+        splt = [block[i:i+keyt] for i in range(0, len(block), keyt)]
+        for i in range(keyt):
+            for j in range(len(splt)):
+                nb = nb + splt[j][i]
+        block = nb
+
+    #substitution
+    ab = [block[i:i+8] for i in range(0, len(block), 8)]
+    for i in range(len(ab)):
+        row = binaryToInteger(ab[i][:2] + ab[i][6:8])
+        column = binaryToInteger(ab[i][3:6])
+        ab[i] = integerToBinary(RijndaelSBox[16*row+column]).split('b')[1]
+    block = ''.join(ab)
 
     key = binaryToInteger(key)
     block = binaryToInteger(block)
@@ -340,15 +365,15 @@ def ROTL8(x, shift):
 
 if __name__ == "__main__":
     #ciphertext = encryptMessage("B", "00000000", "counter")
-    ciphertext = encryptMessage("B", "HELLOWORLDTIMTAM", "counter")
+    ciphertext = encryptMessage("B", "I, Giorno Giovanna, have a dream", "counter")
     #ciphertext = encryptMessage("B", "AAAAAAAA", "ebc")
     print("ciphertext = ", ciphertext)
     #print("AA = ", binaryToHex('10101010')[2:].upper())cl
     plaintext = decryptCipher("B", ciphertext, "counter")
     print("plaintext = ", plaintext, " ", len(plaintext))
     #print("plaintext = ", decryptCipher("B", ciphertext, "ebc"))
-    keyDependentSbox = generateKeyDependentSBox(key_256('B'))
+    '''keyDependentSbox = generateKeyDependentSBox(key_256('B'))
     print(keyDependentSbox)
     print(len(set(keyDependentSbox)) == len(keyDependentSbox) )
-    print(len(set(RijndaelSBox)) == len(RijndaelSBox) )
+    print(len(set(RijndaelSBox)) == len(RijndaelSBox) )'''
     
